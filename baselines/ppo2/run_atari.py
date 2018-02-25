@@ -19,10 +19,12 @@ def train(env_id, num_timesteps, seed, policy):
     config.gpu_options.allow_growth = True #pylint: disable=E1101
     tf.Session(config=config).__enter__()
 
-    env = VecFrameStack(make_atari_env(env_id, 8, seed), 4)
+    env = VecFrameStack(make_atari_env(env_id, 2, seed), 4)
     policy = {'cnn' : CnnPolicy, 'lstm' : LstmPolicy, 'lnlstm' : LnLstmPolicy}[policy]
-    ppo2.learn(policy=policy, env=env, nsteps=128, nminibatches=4,
-        lam=0.95, gamma=0.99, noptepochs=4, log_interval=1,
+    ppo2.learn(policy=policy, env=env, nsteps=128, nminibatches=8,
+        lam=0.95, gamma=0.99, noptepochs=3, log_interval=1,
+        save_interval=1e6,
+        vf_coef=1,
         ent_coef=.01,
         lr=lambda f : f * 2.5e-4,
         cliprange=lambda f : f * 0.1,
@@ -31,8 +33,9 @@ def train(env_id, num_timesteps, seed, policy):
 def main():
     parser = atari_arg_parser()
     parser.add_argument('--policy', help='Policy architecture', choices=['cnn', 'lstm', 'lnlstm'], default='cnn')
+    parser.add_argument('--logdir', help ='Directory for logging')
     args = parser.parse_args()
-    logger.configure()
+    logger.configure(args.logdir, ['stdout', 'log', 'csv', 'tensorboard'])
     train(args.env, num_timesteps=args.num_timesteps, seed=args.seed,
         policy=args.policy)
 
