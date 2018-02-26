@@ -19,9 +19,9 @@ def train(env_id, num_timesteps, seed, policy):
     config.gpu_options.allow_growth = True #pylint: disable=E1101
     tf.Session(config=config).__enter__()
 
-    env = VecFrameStack(make_atari_env(env_id, 2, seed), 4)
+    env = VecFrameStack(make_atari_env(env_id, 8, seed), 4)
     policy = {'cnn' : CnnPolicy, 'lstm' : LstmPolicy, 'lnlstm' : LnLstmPolicy}[policy]
-    ppo2.learn(policy=policy, env=env, nsteps=128, nminibatches=8,
+    ppo2.learn(policy=policy, env=env, nsteps=128, nminibatches=4,
         lam=0.95, gamma=0.99, noptepochs=3, log_interval=1,
         save_interval=1e6,
         vf_coef=1,
