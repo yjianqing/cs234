@@ -19,7 +19,7 @@ def train(env_id, num_timesteps, seed, policy, lrschedule, num_cpu):
 def main():
     parser = atari_arg_parser()
     parser.add_argument('--policy', help='Policy architecture', choices=['cnn', 'lstm', 'lnlstm'], default='lstm')
-    parser.add_argument('--lrschedule', help='Learning rate schedule', choices=['constant', 'linear'], default='linear')
+    parser.add_argument('--lrschedule', help='Learning rate schedule', choices=['constant', 'linear'], default='constant')
     parser.add_argument('--logdir', help ='Directory for logging')
     args = parser.parse_args()
     logger.configure(args.logdir, ['stdout', 'log', 'csv', 'tensorboard'])
