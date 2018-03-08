@@ -66,17 +66,30 @@ class Model(object):
             ps = sess.run(params)
             joblib.dump(ps, save_path)
 
-        def load(load_path):
+        def load(load_path, crossload=None):
             loaded_params = joblib.load(load_path)
             restores = []
             for p, loaded_p in zip(params, loaded_params):
                 #print(p.get_shape().as_list())
                 #print(sess.run(p))
                 #print(loaded_p.shape)
-                if loaded_p.shape == (512, 7): # SUPER HACK-ISH
-                    loaded_p = loaded_p[:,:6]
-                elif loaded_p.shape == (7,):
-                    loaded_p = loaded_p[:6]
+                if crossload == 'a2da': #for Assault->DemonAttack: remove PLAYER_A_UP 3rd action
+                    if loaded_p.shape == (512, 7): # HACK-ISH
+                        loaded_p = np.delete(loaded_p, 2, axis=1)
+                    elif loaded_p.shape == (7,):
+                        loaded_p = np.delete(loaded_p, 2)
+                elif crossload == 'a2si': #for Assault->SpaceInvaders: rearrange actions and omit PLAYER_A_UP
+                    if loaded_p.shape == (512, 7):
+                        loaded_p = loaded_p[:,[0,4,3,1,6,5]]
+                    elif loaded_p.shape == (7,):
+                        rearrange = [0,4,3,1,6,5]
+                        loaded_p = loaded_p[rearrange]
+                elif crossload == 'da2si': #for DemonAttack->SpaceInvaders: rearrange actions
+                    if loaded_p.shape == (512, 6):
+                        loaded_p = loaded_p[:,[0,3,2,1,5,4]]
+                    elif loaded_p.shape == (6,):
+                        rearrange = [0,3,2,1,5,4]
+                        loaded_p = loaded_p[rearrange]
                 restores.append(p.assign(loaded_p))
             sess.run(restores)
             # If you want to load weights, also save/load observation scaling inside VecNormalize
@@ -161,7 +174,7 @@ def constfn(val):
 def learn(*, policy, env, nsteps, total_timesteps, ent_coef, lr,
             vf_coef=0.5,  max_grad_norm=0.5, gamma=0.99, lam=0.95,
             log_interval=10, nminibatches=4, noptepochs=4, cliprange=0.2,
-            save_interval=0, load_weights=None):
+            save_interval=0, load_weights=None, crossload=None):
 
     if isinstance(lr, float): lr = constfn(lr)
     else: assert callable(lr)
@@ -184,7 +197,7 @@ def learn(*, policy, env, nsteps, total_timesteps, ent_coef, lr,
             fh.write(cloudpickle.dumps(make_model))
     model = make_model()
     if load_weights is not None:
-        model.load(load_weights)
+        model.load(load_weights, crossload)
     runner = Runner(env=env, model=model, nsteps=nsteps, gamma=gamma, lam=lam)
 
     epinfobuf = deque(maxlen=100)

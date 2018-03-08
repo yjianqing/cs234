@@ -10,7 +10,7 @@ import multiprocessing
 import tensorflow as tf
 
 
-def train(env_id, num_timesteps, seed, policy, load_weights=None):
+def train(env_id, num_timesteps, seed, policy, load_weights=None, crossload=None):
 
     ncpu = multiprocessing.cpu_count()
     if sys.platform == 'darwin': ncpu //= 2
@@ -30,17 +30,19 @@ def train(env_id, num_timesteps, seed, policy, load_weights=None):
         lr=lambda f : f * 2.5e-4,
         cliprange=lambda f : f * 0.1,
         total_timesteps=int(num_timesteps * 1.1),
-        load_weights=load_weights)
+        load_weights=load_weights,
+        crossload=crossload)
 
 def main():
     parser = atari_arg_parser()
     parser.add_argument('--policy', help='Policy architecture', choices=['cnn', 'lstm', 'lnlstm'], default='cnn')
     parser.add_argument('--logdir', help ='Directory for logging')
     parser.add_argument('--loadwfile', help='Filepath for loading weights')
+    parser.add_argument('--crossload', help='Use a2da or a2si for loading Assault weights into Demon Attack and Space Invaders respectively to set the remapping of actions')
     args = parser.parse_args()
     logger.configure(args.logdir, ['stdout', 'log', 'csv', 'tensorboard'])
     train(args.env, num_timesteps=args.num_timesteps, seed=args.seed,
-        policy=args.policy, load_weights=args.loadwfile)
+        policy=args.policy, load_weights=args.loadwfile, crossload=args.crossload)
 
 if __name__ == '__main__':
     main()
