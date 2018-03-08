@@ -70,6 +70,13 @@ class Model(object):
             loaded_params = joblib.load(load_path)
             restores = []
             for p, loaded_p in zip(params, loaded_params):
+                #print(p.get_shape().as_list())
+                #print(sess.run(p))
+                #print(loaded_p.shape)
+                if loaded_p.shape == (512, 7): # SUPER HACK-ISH
+                    loaded_p = loaded_p[:,:6]
+                elif loaded_p.shape == (7,):
+                    loaded_p = loaded_p[:6]
                 restores.append(p.assign(loaded_p))
             sess.run(restores)
             # If you want to load weights, also save/load observation scaling inside VecNormalize
@@ -154,7 +161,7 @@ def constfn(val):
 def learn(*, policy, env, nsteps, total_timesteps, ent_coef, lr,
             vf_coef=0.5,  max_grad_norm=0.5, gamma=0.99, lam=0.95,
             log_interval=10, nminibatches=4, noptepochs=4, cliprange=0.2,
-            save_interval=0):
+            save_interval=0, load_weights=None):
 
     if isinstance(lr, float): lr = constfn(lr)
     else: assert callable(lr)
@@ -176,6 +183,8 @@ def learn(*, policy, env, nsteps, total_timesteps, ent_coef, lr,
         with open(osp.join(logger.get_dir(), 'make_model.pkl'), 'wb') as fh:
             fh.write(cloudpickle.dumps(make_model))
     model = make_model()
+    if load_weights is not None:
+        model.load(load_weights)
     runner = Runner(env=env, model=model, nsteps=nsteps, gamma=gamma, lam=lam)
 
     epinfobuf = deque(maxlen=100)

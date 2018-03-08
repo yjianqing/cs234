@@ -3,13 +3,14 @@ import sys
 from baselines import logger
 from baselines.common.cmd_util import make_atari_env, atari_arg_parser
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
-from baselines.ppo2 import ppo2
+#from baselines.ppo2 import ppo2
+import ppo2
 from baselines.ppo2.policies import CnnPolicy, LstmPolicy, LnLstmPolicy
 import multiprocessing
 import tensorflow as tf
 
 
-def train(env_id, num_timesteps, seed, policy):
+def train(env_id, num_timesteps, seed, policy, load_weights=None):
 
     ncpu = multiprocessing.cpu_count()
     if sys.platform == 'darwin': ncpu //= 2
@@ -23,21 +24,23 @@ def train(env_id, num_timesteps, seed, policy):
     policy = {'cnn' : CnnPolicy, 'lstm' : LstmPolicy, 'lnlstm' : LnLstmPolicy}[policy]
     ppo2.learn(policy=policy, env=env, nsteps=128, nminibatches=4,
         lam=0.95, gamma=0.99, noptepochs=3, log_interval=1,
-        save_interval=1e6,
+        save_interval=4883,
         vf_coef=1,
         ent_coef=.01,
         lr=lambda f : f * 2.5e-4,
         cliprange=lambda f : f * 0.1,
-        total_timesteps=int(num_timesteps * 1.1))
+        total_timesteps=int(num_timesteps * 1.1),
+        load_weights=load_weights)
 
 def main():
     parser = atari_arg_parser()
     parser.add_argument('--policy', help='Policy architecture', choices=['cnn', 'lstm', 'lnlstm'], default='cnn')
     parser.add_argument('--logdir', help ='Directory for logging')
+    parser.add_argument('--loadwfile', help='Filepath for loading weights')
     args = parser.parse_args()
     logger.configure(args.logdir, ['stdout', 'log', 'csv', 'tensorboard'])
     train(args.env, num_timesteps=args.num_timesteps, seed=args.seed,
-        policy=args.policy)
+        policy=args.policy, load_weights=args.loadwfile)
 
 if __name__ == '__main__':
     main()
