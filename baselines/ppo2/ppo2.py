@@ -73,23 +73,26 @@ class Model(object):
                 #print(p.get_shape().as_list())
                 #print(sess.run(p))
                 #print(loaded_p.shape)
-                if crossload == 'a2da': #for Assault->DemonAttack: remove PLAYER_A_UP 3rd action
+                if crossload == 'a2da' or crossload == 'a2si': #for Assault->DemonAttack/SpaceInvaders: remove PLAYER_A_FIRE and let PLAYER_A_UP be PLAYER_A_FIRE, replace RIGHTFIRE and LEFTFIRE with UP
                     if loaded_p.shape == (512, 7): # HACK-ISH
-                        loaded_p = np.delete(loaded_p, 2, axis=1)
+                        #loaded_p = np.delete(loaded_p, 1, axis=1)
+                        loaded_p = loaded_p[:,[0,2,3,4,2,2]]
                     elif loaded_p.shape == (7,):
-                        loaded_p = np.delete(loaded_p, 2)
-                elif crossload == 'a2si': #for Assault->SpaceInvaders: rearrange actions and omit PLAYER_A_UP
-                    if loaded_p.shape == (512, 7):
-                        loaded_p = loaded_p[:,[0,4,3,1,6,5]]
-                    elif loaded_p.shape == (7,):
-                        rearrange = [0,4,3,1,6,5]
+                        #loaded_p = np.delete(loaded_p, 1)
+                        rearrange = [0,2,3,4,2,2]
                         loaded_p = loaded_p[rearrange]
-                elif crossload == 'da2si': #for DemonAttack->SpaceInvaders: rearrange actions
-                    if loaded_p.shape == (512, 6):
-                        loaded_p = loaded_p[:,[0,3,2,1,5,4]]
-                    elif loaded_p.shape == (6,):
-                        rearrange = [0,3,2,1,5,4]
-                        loaded_p = loaded_p[rearrange]
+                #elif crossload == 'a2si': #for Assault->SpaceInvaders: rearrange actions and omit PLAYER_A_UP
+                    #if loaded_p.shape == (512, 7):
+                        #loaded_p = loaded_p[:,[0,4,3,1,6,5]]
+                    #elif loaded_p.shape == (7,):
+                        #rearrange = [0,4,3,1,6,5]
+                        #loaded_p = loaded_p[rearrange]
+                #elif crossload == 'da2si': #for DemonAttack->SpaceInvaders: rearrange actions
+                    #if loaded_p.shape == (512, 6):
+                        #loaded_p = loaded_p[:,[0,3,2,1,5,4]]
+                    #elif loaded_p.shape == (6,):
+                        #rearrange = [0,3,2,1,5,4]
+                        #loaded_p = loaded_p[rearrange]
                 restores.append(p.assign(loaded_p))
             sess.run(restores)
             # If you want to load weights, also save/load observation scaling inside VecNormalize
