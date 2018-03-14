@@ -38,7 +38,7 @@ def main():
     parser.add_argument('--policy', help='Policy architecture', choices=['cnn', 'lstm', 'lnlstm'], default='cnn')
     parser.add_argument('--logdir', help ='Directory for logging')
     parser.add_argument('--loadwfile', help='Filepath for loading weights')
-    parser.add_argument('--crossload', help='Use a2da or a2si for loading Assault weights into Demon Attack and Space Invaders respectively to set the remapping of actions')
+    parser.add_argument('--crossload', help='Use a2da or a2si for loading Assault weights into Demon Attack and Space Invaders respectively to set the remapping of actions, or ew to load all but the final softmax layer')
     args = parser.parse_args()
     logger.configure(args.logdir, ['stdout', 'log', 'csv', 'tensorboard'])
     train(args.env, num_timesteps=args.num_timesteps, seed=args.seed,

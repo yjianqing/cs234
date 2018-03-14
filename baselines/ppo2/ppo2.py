@@ -81,6 +81,9 @@ class Model(object):
                         #loaded_p = np.delete(loaded_p, 1)
                         rearrange = [0,2,3,4,2,2]
                         loaded_p = loaded_p[rearrange]
+                elif crossload == 'ew': #for earlier weights only
+                    if loaded_p.shape == (512, 7) or loaded_p.shape == (7,):
+                        continue #just don't load
                 #elif crossload == 'a2si': #for Assault->SpaceInvaders: rearrange actions and omit PLAYER_A_UP
                     #if loaded_p.shape == (512, 7):
                         #loaded_p = loaded_p[:,[0,4,3,1,6,5]]
